@@ -331,17 +331,38 @@ impl ToTokens for FragmentBuilder {
 
 #[derive(Copy, Clone, Debug)]
 crate enum Type {
-    // "item" | "block" | "stmt" | "expr" | "pat" | "lifetime" | "path" | "ty" | "ident" | "meta" | "tt" | "vis" | "literal" |
+    Item,
+    Block,
+    Stmt,
+    Expr,
+    Pat,
+    Lifetime,
+    Path,
+    Ty,
     Ident,
+    Meta,
     Tt,
+    Vis,
+    Literal,
 }
 
 impl Parse for Type {
     fn parse(input: ParseStream) -> ParseResult<Type> {
         let ident: Ident = input.parse()?;
         match &*ident.to_string() {
+            "item" => Ok(Type::Item),
+            "block" => Ok(Type::Block),
+            "stmt" => Ok(Type::Stmt),
+            "expr" => Ok(Type::Expr),
+            "pat" => Ok(Type::Pat),
+            "lifetime" => Ok(Type::Lifetime),
+            "path" => Ok(Type::Path),
+            "ty" => Ok(Type::Ty),
             "ident" => Ok(Type::Ident),
+            "meta" => Ok(Type::Meta),
             "tt" => Ok(Type::Tt),
+            "vis" => Ok(Type::Vis),
+            "literal" => Ok(Type::Literal),
             s => panic!("Bad fragment type: {}", s),
         }
     }
@@ -350,15 +371,70 @@ impl Parse for Type {
 impl ToTokens for Type {
     fn to_tokens(&self, tokens: &mut TokenStream2) {
         match self {
+            Type::Item => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Item", Span::call_site()));
+            }
+            Type::Block => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Block", Span::call_site()));
+            }
+            Type::Stmt => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Stmt", Span::call_site()));
+            }
+            Type::Expr => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Expr", Span::call_site()));
+            }
+            Type::Pat => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Pat", Span::call_site()));
+            }
+            Type::Lifetime => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Lifetime", Span::call_site()));
+            }
+            Type::Path => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Path", Span::call_site()));
+            }
+            Type::Ty => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Type", Span::call_site()));
+            }
             Type::Ident => {
                 tokens.append(Ident::new("syn", Span::call_site()));
                 Token!(::)(Span::call_site()).to_tokens(tokens);
                 tokens.append(Ident::new("Ident", Span::call_site()));
             }
+            Type::Meta => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Meta", Span::call_site()));
+            }
             Type::Tt => {
                 tokens.append(Ident::new("proc_macro2", Span::call_site()));
                 Token!(::)(Span::call_site()).to_tokens(tokens);
                 tokens.append(Ident::new("TokenTree", Span::call_site()));
+            }
+            Type::Vis => {
+                tokens.append(Ident::new("syn", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Visibility", Span::call_site()));
+            }
+            Type::Literal => {
+                tokens.append(Ident::new("proc_macro2", Span::call_site()));
+                Token!(::)(Span::call_site()).to_tokens(tokens);
+                tokens.append(Ident::new("Literal", Span::call_site()));
             }
         }
     }

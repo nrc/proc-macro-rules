@@ -24,7 +24,6 @@ mod parse;
 // TODO
 // tests!
 // docs!
-// other AST nodes
 // repeat separators
 
 fn expand_rules(rules: parse::Rules) -> TokenStream2 {
