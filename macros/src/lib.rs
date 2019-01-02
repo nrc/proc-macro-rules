@@ -210,7 +210,6 @@ enum HoistRepeat {
 // repeat will have to do opt toof
 fn sub_matches(builder_name: &Ident, outer_builder_name: &Ident, variables: &[MetaVar], repeat: HoistRepeat) -> TokenStream2 {
     let builder = builder(builder_name, variables);
-    // TODO types should be based on outer types, not inners
     let hoists: Vec<_> = match repeat {
         HoistRepeat::Repeat => {
             variables.iter().map(|v| {
@@ -228,8 +227,14 @@ fn sub_matches(builder_name: &Ident, outer_builder_name: &Ident, variables: &[Me
             variables.iter().map(|v| {
                 let name = &v.name;
                 let unpack = match &v.ty {
-                    MetaVarType::Vec(_) | MetaVarType::Option(_) => quote! { self.#name.clone() },
-                    MetaVarType::T(_) => quote! { self.#name.as_ref().expect("hoist failed (b)").clone() },
+                    MetaVarType::Vec(_) => quote! {
+                        if self.#name.is_empty() {
+                            None
+                        } else {
+                            Some(self.#name.clone())
+                        }
+                    },
+                    MetaVarType::T(_) | MetaVarType::Option(_) => quote! { self.#name.clone() },
                 };
                 quote! {
                     outer.#name = #unpack;

@@ -181,9 +181,9 @@ mod tests {
 
     #[test]
     fn smoke() {
-        let tokens: proc_macro2::TokenStream = "hi (a b c) # [there *] the - rest".parse().unwrap();
+        let tokens: proc_macro2::TokenStream = "hi (a b c) # [there] the - rest".parse().unwrap();
         rules!(tokens => {
-            ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:expr)*) => {
+            ($finish:ident ($($found:ident)*) # [ $($inner:tt)? ] $($rest:expr)*) => {
                 panic!("ident {} {:?} {:?} {:?}", finish, inner, found, rest);
             }
         })

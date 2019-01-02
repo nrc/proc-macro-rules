@@ -229,11 +229,24 @@ impl ToTokens for FragmentBuilder {
             // TODO
             FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore) => {}
             FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne) => {
-                // tokens.append_all(quote! {
-                //     ms.fork(|ps, matches| {
-                //         #rule
-                //     });
-                // });
+                let sub_builder_name = &rule.name;
+                let match_builder = crate::sub_matches(sub_builder_name, rule.parent_name.as_ref().unwrap(), &rule.variables, HoistRepeat::Option);
+
+                tokens.append_all(quote! {
+                    ms.fork(|ps, match_handler| {
+                        #match_builder
+
+                        let mut ms: MatchSet<#sub_builder_name> = proc_macro_rules::MatchSet::new(ps);
+
+                        #rule
+
+                        let mb = ms.finalise()?;
+                        match_handler.hoist(&mb);
+                        
+                        Ok(())
+                    });
+                    ms.reset_states();
+                });
             }
             FragmentBuilder::Ident(i) => {
                 let i_str = &i.to_string();
