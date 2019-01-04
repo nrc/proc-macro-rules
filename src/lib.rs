@@ -19,8 +19,13 @@ mod tests {
         let tokens: proc_macro2::TokenStream = "hi (a b c) # [there] the - rest".parse().unwrap();
         rules!(tokens => {
             ($finish:ident ($($found:ident)+) # [ $($inner:tt)? ] $($rest:expr)*) => {
-                panic!("ident {} {:?} {:?} {:?}", finish, inner, found, rest);
+                assert_eq!(finish.to_string(), "hi");
+                assert_eq!(found.len(), 3);
+                assert!(inner.is_some());
+                assert_eq!(rest.len(), 1);
+                return;
             }
-        })
+        });
+        panic!();
     }
 }
