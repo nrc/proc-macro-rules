@@ -233,8 +233,41 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            // FIXME (#7)
-            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore) => {}
+            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore) => {
+                let sub_builder_name = &rule.name;
+                let match_builder = crate::sub_matches(
+                    sub_builder_name,
+                    rule.parent_name.as_ref().unwrap(),
+                    &rule.variables,
+                    HoistRepeat::Repeat,
+                );
+
+                tokens.append_all(quote! {
+                    let mut count = 0;
+                    while ms.fork(|ps, match_handler| {
+                        #match_builder
+
+                        let mut ms: MatchSet<#sub_builder_name> =
+                            proc_macro_rules::MatchSet::new(ps);
+
+                        #rule
+
+                        let mb = ms.finalise()?;
+                        match_handler.hoist(&mb);
+
+                        Ok(())
+                    }) {
+                        count += 1;
+                    }
+                    if count == 0 {
+                        return Err(syn::Error::new(
+                            proc_macro2::Span::call_site(),
+                            "At least one iteration required",
+                        ));
+                    }
+                    ms.reset_states();
+                });
+            }
             FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::sub_matches(
@@ -322,7 +355,11 @@ impl ToTokens for FragmentBuilder {
                         match tok {
                             proc_macro2::TokenTree::Group(g) => {
                                 if g.delimiter() != #d_toks {
-                                    return Err(syn::Error::new(proc_macro2::Span::call_site(), "bad delimiter"));
+                                    return Err(
+                                        syn::Error::new(
+                                            proc_macro2::Span::call_site(),
+                                            "bad delimiter",
+                                        ));
                                 }
                                 {
                                     #match_builder
