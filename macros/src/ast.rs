@@ -47,7 +47,7 @@ crate enum RepeatKind {
     ZeroOrOne,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 crate enum Type {
     Item,
     Block,
@@ -64,13 +64,13 @@ crate enum Type {
     Literal,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 crate struct MetaVar {
     crate name: Ident,
     crate ty: MetaVarType,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 crate enum MetaVarType {
     Vec(Box<MetaVarType>),
     Option(Box<MetaVarType>),

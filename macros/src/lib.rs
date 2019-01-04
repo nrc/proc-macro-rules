@@ -55,3 +55,62 @@ fn collect_vars(rule: &ast::SubRule, vars: &mut Vec<ast::MetaVar>) {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::ast::*;
+    use syn::Ident;
+    use proc_macro2::Span;
+
+    #[test]
+    fn test_collect_vars() {
+        fn run_test(rule: ast::SubRule, expected: Vec<MetaVar>) {
+            let mut result = vec![];
+            collect_vars(&rule, &mut result);
+            assert_eq!(result, expected);
+        }
+
+        // ``
+        let ast = ast::SubRule {
+            matchers: vec![],
+        };
+        run_test(ast, vec![]);
+
+        // `$foo:vis`
+        let ast = ast::SubRule {
+            matchers: vec![Fragment::Var(Ident::new("foo", Span::call_site()), Type::Vis)],
+        };
+        run_test(ast, vec![MetaVar {
+            name: Ident::new("foo", Span::call_site()),
+            ty: MetaVarType::T(Type::Vis),
+        }]);
+
+        // `foo`
+        let ast = ast::SubRule {
+            matchers: vec![Fragment::Ident(Ident::new("foo", Span::call_site()))],
+        };
+        run_test(ast, vec![]);
+
+        // `foo $bar:Tt $($foo:expr)*`
+        let ast = ast::SubRule {
+            matchers: vec![
+                Fragment::Ident(Ident::new("foo", Span::call_site())),
+                Fragment::Var(Ident::new("bar", Span::call_site()), Type::Tt),
+                Fragment::Repeat(SubRule {
+                    matchers: vec![Fragment::Var(Ident::new("foo", Span::call_site()), Type::Expr)],
+                }, RepeatKind::OneOrMore),
+            ],
+        };
+        run_test(ast, vec![
+            MetaVar {
+                name: Ident::new("bar", Span::call_site()),
+                ty: MetaVarType::T(Type::Tt),
+            },
+            MetaVar {
+                name: Ident::new("foo", Span::call_site()),
+                ty: MetaVarType::Vec(Box::new(MetaVarType::T(Type::Expr))),
+            },
+        ]);
+    }
+}
