@@ -7,14 +7,15 @@ use syn::{Ident, Token};
 
 crate fn expand_rules(rules: Rules) -> TokenStream2 {
     let clause = rules.clause;
-    let rules: Vec<_> = rules.rules.into_iter().map(|r| expand_rule(r)).collect();
+    let rules = rules.rules.into_iter().map(|r| expand_rule(r));
     quote! {
-        {
-            fn match_rules(tts: proc_macro2::TokenStream) {
-                #(#rules)*
-                panic!("No rule matched input");
-            }
-            match_rules(#clause)
+        // This is needed because the user can add return statements which make
+        // later code unreachable.
+        #[allow(unreachable_code)]
+        'outer: {
+            let tts = &#clause;
+            #(#rules)*
+            panic!("No rule matched input");
         }
     }
 }
@@ -55,7 +56,7 @@ fn expand_rule(rule: Rule) -> TokenStream2 {
             match syn::parse2(tts.clone()) {
                 Ok(Matches { #(#vars,)* }) => {
                     #body;
-                    return;
+                    break 'outer;
                 }
                 // It can be useful to debug here.
                 Err(e) => {}
