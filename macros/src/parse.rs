@@ -112,7 +112,7 @@ crate struct RuleBuilder {
     crate name: Ident,
 }
 
-// FIXME WARNING: VERY THREAD-UNSAFE
+// FIXME(#10) WARNING: VERY THREAD-UNSAFE
 fn next_builder_name() -> String {
     static mut NEXT_ID: u32 = 0;
     unsafe {
@@ -133,7 +133,7 @@ impl ToTokens for RuleBuilder {
 #[derive(Debug)]
 crate enum Fragment {
     Var(Ident, Type),
-    // TODO separators
+    // FIXME(#1) separators
     Repeat(SubRule, RepeatKind),
     Ident(Ident),
     Punct(Punct),
@@ -187,7 +187,7 @@ impl Fragment {
 
 crate enum FragmentBuilder {
     Var(Ident, Type),
-    // TODO separators
+    // FIXME(#1) separators
     Repeat(RuleBuilder, RepeatKind),
     Ident(Ident),
     Punct(Punct),
@@ -226,7 +226,7 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            // TODO
+            // FIXME (#7)
             FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore) => {}
             FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne) => {
                 let sub_builder_name = &rule.name;

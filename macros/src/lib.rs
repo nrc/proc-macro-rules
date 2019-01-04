@@ -21,11 +21,6 @@ pub fn rules(input: TokenStream) -> TokenStream {
 
 mod parse;
 
-// TODO
-// tests!
-// docs!
-// repeat separators
-
 fn expand_rules(rules: parse::Rules) -> TokenStream2 {
     let clause = rules.clause;
     let rules: Vec<_> = rules.rules.into_iter().map(|r| expand_rule(r)).collect();
@@ -67,7 +62,7 @@ fn expand_rule(rule: parse::Rule) -> TokenStream2 {
 
                     let result = ms.finalise()?;
                     if result.len() > 1 {
-                        // TODO pick best match
+                        // FIXME(#8) pick best match
                     }
                     Ok(result.into_iter().next().unwrap().matches.finalise())
                 }
@@ -86,10 +81,10 @@ fn expand_rule(rule: parse::Rule) -> TokenStream2 {
 }
 
 fn verify_rule(_rule: &parse::SubRule) {
-    // FIXME pattern rule verification
+    // FIXME(#11) pattern rule verification
 }
 
-// FIXME we could save some computation by storing intermediate results on the SubRules.
+// FIXME(#12) we could save some computation by using intermediate results from the SubRules.
 fn collect_vars(rule: &parse::SubRule, vars: &mut Vec<MetaVar>) {
     for m in &rule.matchers {
         match m {
@@ -300,7 +295,7 @@ fn matches_fork(builder_name: &Ident, variables: &[MetaVar]) -> TokenStream2 {
             #builder_name { #(#names: #values,)* }
         }
 
-        // TODO this is inefficient and requires the matched types to
+        // FIXME(#9) this is inefficient and requires the matched types to
         // be Clone. We could do better by using an immutable data structure.
         fn fork(&self) -> #builder_name {
             self.clone()

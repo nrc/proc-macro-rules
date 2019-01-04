@@ -10,8 +10,6 @@ use syn::parse::{ParseBuffer, ParseStream, Error};
 use std::collections::HashSet;
 use proc_macro2::Span;
 
-// TODO refactor into modules
-
 pub struct Position<'a, M: Fork> {
     input: ParseBuffer<'a>,
     matches: M,
