@@ -170,7 +170,7 @@ fn matches(builder_name: &Ident, variables: &[MetaVar]) -> TokenStream2 {
             MetaVarType::Vec(_) | MetaVarType::Option(_) => quote! { #name: self.#name },
             MetaVarType::T(_) => quote! { #name: self.#name.unwrap() },
         }
-    });        
+    });
     let fork_impl = matches_fork(builder_name, variables);
     quote! {
         #builder
@@ -203,23 +203,32 @@ enum HoistRepeat {
 }
 
 // repeat will have to do opt toof
-fn sub_matches(builder_name: &Ident, outer_builder_name: &Ident, variables: &[MetaVar], repeat: HoistRepeat) -> TokenStream2 {
+fn sub_matches(
+    builder_name: &Ident,
+    outer_builder_name: &Ident,
+    variables: &[MetaVar],
+    repeat: HoistRepeat,
+) -> TokenStream2 {
     let builder = builder(builder_name, variables);
     let hoists: Vec<_> = match repeat {
-        HoistRepeat::Repeat => {
-            variables.iter().map(|v| {
+        HoistRepeat::Repeat => variables
+            .iter()
+            .map(|v| {
                 let name = &v.name;
                 let unpack = match &v.ty {
                     MetaVarType::Vec(_) | MetaVarType::Option(_) => quote! { self.#name.clone() },
-                    MetaVarType::T(_) => quote! { self.#name.as_ref().expect("hoist failed (a)").clone() },
+                    MetaVarType::T(_) => {
+                        quote! { self.#name.as_ref().expect("hoist failed (a)").clone() }
+                    }
                 };
                 quote! {
                     outer.#name.push(#unpack);
                 }
-            }).collect()
-        }
-        HoistRepeat::Option => {
-            variables.iter().map(|v| {
+            })
+            .collect(),
+        HoistRepeat::Option => variables
+            .iter()
+            .map(|v| {
                 let name = &v.name;
                 let unpack = match &v.ty {
                     MetaVarType::Vec(_) => quote! {
@@ -234,20 +243,23 @@ fn sub_matches(builder_name: &Ident, outer_builder_name: &Ident, variables: &[Me
                 quote! {
                     outer.#name = #unpack;
                 }
-            }).collect()
-        }
-        HoistRepeat::None => {
-            variables.iter().map(|v| {
+            })
+            .collect(),
+        HoistRepeat::None => variables
+            .iter()
+            .map(|v| {
                 let name = &v.name;
                 let unpack = match &v.ty {
                     MetaVarType::Vec(_) | MetaVarType::Option(_) => quote! { self.#name.clone() },
-                    MetaVarType::T(_) => quote! { Some(self.#name.as_ref().expect("hoist failed (c)").clone()) },
+                    MetaVarType::T(_) => {
+                        quote! { Some(self.#name.as_ref().expect("hoist failed (c)").clone()) }
+                    }
                 };
                 quote! {
                     outer.#name = #unpack;
                 }
-            }).collect()
-        }
+            })
+            .collect(),
     };
     let fork_impl = matches_fork(builder_name, variables);
     quote! {
@@ -284,11 +296,9 @@ fn builder(builder_name: &Ident, variables: &[MetaVar]) -> TokenStream2 {
 
 fn matches_fork(builder_name: &Ident, variables: &[MetaVar]) -> TokenStream2 {
     let names = &var_names(variables);
-    let values = variables.iter().map(|v| {
-        match v.ty {
-            MetaVarType::Vec(_) => quote! { Vec::new() },
-            _ => quote! { None },
-        }
+    let values = variables.iter().map(|v| match v.ty {
+        MetaVarType::Vec(_) => quote! { Vec::new() },
+        _ => quote! { None },
     });
     quote! {
         fn new() -> #builder_name {

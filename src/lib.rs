@@ -6,9 +6,9 @@ extern crate syn;
 
 pub use macros::rules;
 
-use syn::parse::{ParseBuffer, ParseStream, Error};
-use std::collections::HashSet;
 use proc_macro2::Span;
+use std::collections::HashSet;
+use syn::parse::{Error, ParseBuffer, ParseStream};
 
 pub struct Position<'a, M: Fork> {
     input: ParseBuffer<'a>,
@@ -71,7 +71,8 @@ impl<'a, M: Fork> MatchSet<'a, M> {
 
     // return value = if any positions were forked
     pub fn fork<F>(&mut self, f: F) -> bool
-        where for<'b> F: Fn(ParseBuffer<'a>, &mut MatchHandler<'b, 'a, M>) -> Result<(), Error>
+    where
+        for<'b> F: Fn(ParseBuffer<'a>, &mut MatchHandler<'b, 'a, M>) -> Result<(), Error>,
     {
         debug_assert!(self.garbage.is_empty());
 
@@ -92,7 +93,11 @@ impl<'a, M: Fork> MatchSet<'a, M> {
             }
         }
 
-        self.positions.iter().filter(|p| p.state == FragmentState::Ready).count() > 0
+        self.positions
+            .iter()
+            .filter(|p| p.state == FragmentState::Ready)
+            .count()
+            > 0
     }
 
     pub fn reset_states(&mut self) {
@@ -103,7 +108,8 @@ impl<'a, M: Fork> MatchSet<'a, M> {
 
     // returns err if the set is non-empty
     pub fn expect<F>(&mut self, f: F) -> Result<(), Error>
-        where for<'b> F: Fn(ParseStream<'b>, &'b mut M) -> Result<(), Error>,
+    where
+        for<'b> F: Fn(ParseStream<'b>, &'b mut M) -> Result<(), Error>,
     {
         debug_assert!(self.garbage.is_empty());
 
