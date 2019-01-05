@@ -110,6 +110,7 @@ mod tests {
                         assert_eq!(x.to_string(), "bar");
                         return;
                     } else {
+                        // TODO failing here!
                         panic!("branch: 1, expected: {}", expected_branch);
                     }
                 }
@@ -118,7 +119,7 @@ mod tests {
                         assert_eq!(x.len(), 3);
                         assert_eq!(x[0].to_string(), "a");
                         assert_eq!(x[1].to_string(), "b");
-                        assert_eq!(x[3].to_string(), "c");
+                        assert_eq!(x[2].to_string(), "c");
                         return;
                     } else {
                         panic!("branch: 2, expected: {}", expected_branch);

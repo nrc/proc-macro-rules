@@ -46,10 +46,12 @@ fn expand_rule(rule: Rule) -> TokenStream2 {
                     #rule
 
                     let result = ms.finalise()?;
-                    if result.len() > 1 {
-                        // FIXME(#8) pick best match
-                    }
-                    Ok(result.into_iter().next().unwrap().matches.finalise())
+                    // FIXME(#8) pick best match
+                    result.into_iter().filter_map(|p| if p.input.is_empty() {
+                        Some(p.matches.finalise())
+                    } else {
+                        None
+                    }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
                 }
             }
 
