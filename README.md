@@ -24,7 +24,7 @@ rules!(tokens => {
 
 ## Using proc-macro-rules
 
-Add `proc-macro-rules = "0.1.0"` to your Cargo.toml. You'll need the following feature flags:
+Add `proc-macro-rules = "0.1.1"` to your Cargo.toml. You'll need the following feature flags:
 
 ```rust
 #![feature(proc_macro_hygiene)]
