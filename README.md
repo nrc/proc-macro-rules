@@ -24,11 +24,10 @@ rules!(tokens => {
 
 ## Using proc-macro-rules
 
-Add `proc-macro-rules = "0.1.1"` to your Cargo.toml. You'll need the following feature flags:
+Add `proc-macro-rules = "0.1.1"` to your Cargo.toml. You'll need the following feature flag:
 
 ```rust
 #![feature(proc_macro_hygiene)]
-#![feature(label_break_value)]
 ```
 
 Import the `rules` macro with `use proc_macro_rules::rules`, then use with `rules!(tokens => { branches });` where `tokens` is an expression which evaluates to a `TokenStream` (such as the argument in the definition of a procedural macro).
