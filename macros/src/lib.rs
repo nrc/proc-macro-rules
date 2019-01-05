@@ -7,6 +7,7 @@ extern crate quote;
 extern crate syn;
 
 use proc_macro::TokenStream;
+use syn::parse_macro_input;
 
 crate mod ast;
 crate mod expand;
@@ -14,7 +15,7 @@ crate mod parse;
 
 #[proc_macro]
 pub fn rules(input: TokenStream) -> TokenStream {
-    let rules: ast::Rules = syn::parse(input).expect("Parsing error");
+    let rules = parse_macro_input!(input as ast::Rules);
     let result = expand::expand_rules(rules).into();
     // println!("{}", result);
     result
