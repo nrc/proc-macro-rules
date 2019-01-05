@@ -16,3 +16,6 @@ syn = { version = "0.15.0", features = ["full", "extra-traits"] }
 members = [
     "macros",
 ]
+
+[patch.crates-io]
+proc-macro-rules-macros = { path = "macros" }
