@@ -255,7 +255,7 @@ impl ToTokens for FragmentBuilder {
                     Ok(())
                 })?;
             }),
-            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrMore) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrMore, _) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,
@@ -281,7 +281,7 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore, _) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,
@@ -316,7 +316,7 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne, _) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,

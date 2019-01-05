@@ -33,7 +33,7 @@ fn collect_vars(rule: &ast::SubRule, vars: &mut Vec<ast::MetaVar>) {
                 name: id.clone(),
                 ty: ast::MetaVarType::T(*ty),
             }),
-            ast::Fragment::Repeat(sub_rule, rkind) => {
+            ast::Fragment::Repeat(sub_rule, rkind, _) => {
                 let mut sub = vec![];
                 collect_vars(sub_rule, &mut sub);
                 for s in sub {

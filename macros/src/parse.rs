@@ -65,8 +65,21 @@ impl Parse for Fragment {
                 let content;
                 parenthesized!(content in input);
                 let rule = content.parse()?;
-                let kind = input.parse()?;
-                Ok(Fragment::Repeat(rule, kind))
+                let fork = input.fork();
+                let (separator, kind) = match fork.parse::<RepeatKind>() {
+                    Ok(_) => (None, input.parse()?),
+                    Err(_) => {
+                        let tok: TokenTree2 = input.parse()?;
+                        let p = match tok {
+                            TokenTree2::Punct(p) => p,
+                            _ => {
+                                return Err(input.error("Separator not punctutation"));
+                            }
+                        };
+                        (Some(p), input.parse()?)
+                    }
+                };
+                Ok(Fragment::Repeat(rule, kind, separator))
             } else {
                 let ident = input.parse()?;
                 let _: Token!(:) = input.parse()?;
@@ -105,7 +118,7 @@ impl Parse for Type {
             "tt" => Ok(Type::Tt),
             "vis" => Ok(Type::Vis),
             "literal" => Ok(Type::Literal),
-            s => panic!("Bad fragment type: {}", s),
+            s => Err(input.error(format!("Bad fragment type: {}", s))),
         }
     }
 }

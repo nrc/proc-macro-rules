@@ -29,8 +29,7 @@ crate struct SubRule {
 #[derive(Debug)]
 crate enum Fragment {
     Var(Ident, Type),
-    // FIXME(#1) separators
-    Repeat(SubRule, RepeatKind),
+    Repeat(SubRule, RepeatKind, Option<Punct>),
     Ident(Ident),
     Punct(Punct),
     Literal(Literal),
@@ -86,8 +85,7 @@ crate struct RuleBuilder {
 
 crate enum FragmentBuilder {
     Var(Ident, Type),
-    // FIXME(#1) separators
-    Repeat(RuleBuilder, RepeatKind),
+    Repeat(RuleBuilder, RepeatKind, Option<Punct>),
     Ident(Ident),
     Punct(Punct),
     Literal(Literal),
@@ -125,7 +123,7 @@ impl Fragment {
     crate fn to_builder(self, parent_name: Option<Ident>) -> FragmentBuilder {
         match self {
             Fragment::Var(i, t) => FragmentBuilder::Var(i, t),
-            Fragment::Repeat(r, rep) => FragmentBuilder::Repeat(r.to_builder(parent_name), rep),
+            Fragment::Repeat(r, rep, sep) => FragmentBuilder::Repeat(r.to_builder(parent_name), rep, sep),
             Fragment::Ident(i) => FragmentBuilder::Ident(i),
             Fragment::Punct(p) => FragmentBuilder::Punct(p),
             Fragment::Literal(l) => FragmentBuilder::Literal(l),
