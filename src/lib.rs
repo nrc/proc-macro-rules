@@ -4,7 +4,9 @@
 //! 
 //! Example:
 //! 
-//! ```rust
+//! ```rust,ignore
+//! use proc_macro_rules::rules;
+//!
 //! rules!(tokens => {
 //!     ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
 //!         for f in found {
@@ -25,7 +27,7 @@
 //! evaluates to a `TokenStream` (such as the argument in the definition of a
 //! procedural macro).
 //! 
-//! Each branch in `branches` should have the form `pattern => { body }` where
+//! Each branch in `branches` should have the form `( pattern ) => { body }` where
 //! `pattern` is a macro-rules-style pattern (using all the same syntax for
 //! meta-variables, AST nodes, repetition, etc.) and `body` is rust code executed
 //! when the pattern is matched. Within `body`, any meta-variables in the pattern
@@ -51,14 +53,14 @@ pub use macros::rules;
 
 mod match_set;
 
-// Smoke tests
+// Regression tests
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate as proc_macro_rules;
 
     #[test]
-    fn smoke_1() {
+    fn test_smoke() {
         let tokens: proc_macro2::TokenStream = "hi (a b c) # [there] the - rest".parse().unwrap();
         rules!(tokens => {
             ($finish:ident ($($found:ident)+) # [ $($inner:tt)? ] $($rest:expr)*) => {
@@ -70,5 +72,64 @@ mod tests {
             }
         });
         panic!();
+    }
+
+    #[test]
+    fn test_empty() {
+        let tokens: proc_macro2::TokenStream = "".parse().unwrap();
+        rules!(tokens => {
+            () => {
+                return;
+            }
+        });
+        panic!();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_no_match() {
+        let tokens: proc_macro2::TokenStream = "foo".parse().unwrap();
+        rules!(tokens => {
+            (bar) => {}
+        });
+    }
+
+    #[test]
+    fn test_branches() {
+        fn apply(tokens: proc_macro2::TokenStream, expected_branch: usize) {
+            rules!(tokens => {
+                (foo) => {
+                    if expected_branch == 0 {
+                        return;
+                    } else {
+                        panic!("branch: 0, expected: {}", expected_branch);
+                    }
+                }
+                ($x:ident) => {
+                    if expected_branch == 1 {
+                        assert_eq!(x.to_string(), "bar");
+                        return;
+                    } else {
+                        panic!("branch: 1, expected: {}", expected_branch);
+                    }
+                }
+                ($($x:ident)*) => {
+                    if expected_branch == 2 {
+                        assert_eq!(x.len(), 3);
+                        assert_eq!(x[0].to_string(), "a");
+                        assert_eq!(x[1].to_string(), "b");
+                        assert_eq!(x[3].to_string(), "c");
+                        return;
+                    } else {
+                        panic!("branch: 2, expected: {}", expected_branch);
+                    }
+                }
+            });
+            panic!("Hit no branches, expected: {}", expected_branch);
+        }
+
+        apply("foo".parse().unwrap(), 0);
+        apply("bar".parse().unwrap(), 1);
+        apply("a b c".parse().unwrap(), 2);
     }
 }
