@@ -56,7 +56,7 @@ mod match_set;
 // Regression tests
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use macros::rules;
     use crate as proc_macro_rules;
 
     #[test]

@@ -39,7 +39,7 @@ fn expand_rule(rule: Rule) -> TokenStream2 {
 
             impl syn::parse::Parse for Matches {
                 fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
-                    let mut ms: MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
+                    let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
                     // parse the whole initial ParseStream to avoid 'unexpected token' errors
                     let _: Result<proc_macro2::TokenStream, _> = ps.parse();
 
@@ -263,7 +263,7 @@ impl ToTokens for FragmentBuilder {
                     while ms.fork(|ps, match_handler| {
                         #match_builder
 
-                        let mut ms: MatchSet<#sub_builder_name> =
+                        let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
@@ -290,7 +290,7 @@ impl ToTokens for FragmentBuilder {
                     while ms.fork(|ps, match_handler| {
                         #match_builder
 
-                        let mut ms: MatchSet<#sub_builder_name> =
+                        let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
@@ -324,7 +324,7 @@ impl ToTokens for FragmentBuilder {
                     ms.fork(|ps, match_handler| {
                         #match_builder
 
-                        let mut ms: MatchSet<#sub_builder_name> =
+                        let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
@@ -385,7 +385,7 @@ impl ToTokens for FragmentBuilder {
                 };
 
                 let sub_builder_name = &rule.name;
-                let match_builder = crate::expand::sub_matches(
+                let match_builder = sub_matches(
                     sub_builder_name,
                     rule.parent_name.as_ref().unwrap(),
                     &rule.variables,
@@ -411,7 +411,8 @@ impl ToTokens for FragmentBuilder {
 
                                     impl syn::parse::Parse for MatchParser {
                                         fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<MatchParser> {
-                                            let mut ms: MatchSet<#sub_builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
+                                            let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
+                                                proc_macro_rules::MatchSet::new(ps.fork());
                                             // parse the whole initial ParseStream to avoid 'unexpected token' errors
                                             let _: Result<proc_macro2::TokenStream, _> = ps.parse();
 
@@ -426,8 +427,8 @@ impl ToTokens for FragmentBuilder {
                                         }
                                     }
 
-                                    let mb: MatchParser = syn::parse2(g.stream())?;
-                                    mb.0.hoist(matches);
+                                    let mp: MatchParser = syn::parse2(g.stream())?;
+                                    proc_macro_rules::Fork::hoist(&mp.0, matches);
                                 }
                                 Ok(())
                             }
