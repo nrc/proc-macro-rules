@@ -24,11 +24,7 @@ rules!(tokens => {
 
 ## Using proc-macro-rules
 
-Add `proc-macro-rules = "0.1.1"` to your Cargo.toml. You'll need the following feature flag:
-
-```rust
-#![feature(proc_macro_hygiene)]
-```
+Add `proc-macro-rules = "0.2.1"` to your Cargo.toml.
 
 Import the `rules` macro with `use proc_macro_rules::rules`, then use with `rules!(tokens => { branches });` where `tokens` is an expression which evaluates to a `TokenStream` (such as the argument in the definition of a procedural macro).
 
@@ -39,7 +35,7 @@ For example, in the first branch in the above example `ident` has type `syn::Ide
 
 ## Building and testing
 
-You'll need a nightly Rust compiler. Use `cargo build` to build, `cargo test --all` to test.
+Use `cargo build` to build, `cargo test --all` to test.
 
 
 ## Contributing
