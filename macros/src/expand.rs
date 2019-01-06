@@ -115,14 +115,14 @@ fn matches(builder_name: &Ident, variables: &[MetaVar]) -> TokenStream2 {
 }
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
-crate enum HoistRepeat {
+enum HoistRepeat {
     None,
     Repeat,
     Option,
 }
 
 // repeat will have to do opt toof
-crate fn sub_matches(
+fn sub_matches(
     builder_name: &Ident,
     outer_builder_name: &Ident,
     variables: &[MetaVar],

@@ -69,21 +69,22 @@
 //! `syn::Ident` and `inner` has type `Vec<proc_macro2::TokenTree>`.
 
 
-#![feature(proc_macro_hygiene)]
-
 extern crate proc_macro2;
-extern crate proc_macro_rules_macros as macros;
+extern crate proc_macro_hack;
+extern crate proc_macro_rules_macros;
 extern crate syn;
 
 pub use crate::match_set::{Fork, MatchSet};
-pub use macros::rules;
+#[proc_macro_hack]
+pub use proc_macro_rules_macros::rules;
+
+use proc_macro_hack::proc_macro_hack;
 
 mod match_set;
 
 // Regression tests
 #[cfg(test)]
 mod tests {
-    use macros::rules;
     use crate as proc_macro_rules;
 
     #[test]

@@ -15,3 +15,4 @@ proc-macro = true
 quote = "0.6.0"
 syn = { version = "0.15.0", features = ["full", "extra-traits"] }
 proc-macro2 = "0.4.21"
+proc-macro-hack = "0.5"

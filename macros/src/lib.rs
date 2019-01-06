@@ -1,5 +1,4 @@
 #![recursion_limit = "256"]
-#![feature(crate_visibility_modifier)]
 
 extern crate proc_macro;
 extern crate proc_macro2;
@@ -7,14 +6,15 @@ extern crate quote;
 extern crate syn;
 
 use proc_macro::TokenStream;
+use proc_macro_hack::proc_macro_hack;
 use quote::ToTokens;
 use syn::parse_macro_input;
 
-crate mod ast;
-crate mod expand;
-crate mod parse;
+mod ast;
+mod expand;
+mod parse;
 
-#[proc_macro]
+#[proc_macro_hack]
 pub fn rules(input: TokenStream) -> TokenStream {
     let rules = parse_macro_input!(input as ast::Rules);
     let result = rules.into_token_stream().into();

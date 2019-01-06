@@ -4,30 +4,30 @@ use proc_macro2::{Delimiter, Literal, Punct, Span};
 use syn::{Block, Expr, Ident};
 
 #[derive(Debug)]
-crate struct Rules {
-    crate clause: Expr,
-    crate rules: Vec<Rule>,
+pub(crate) struct Rules {
+    pub(crate) clause: Expr,
+    pub(crate) rules: Vec<Rule>,
 }
 
 #[derive(Debug)]
-crate struct Rule {
-    crate lhs: SubRule,
-    crate rhs: Rhs,
+pub(crate) struct Rule {
+    pub(crate) lhs: SubRule,
+    pub(crate) rhs: Rhs,
 }
 
 #[derive(Debug, Clone)]
-crate enum Rhs {
+pub(crate) enum Rhs {
     Expr(Expr),
     Block(Block),
 }
 
 #[derive(Debug, Clone)]
-crate struct SubRule {
-    crate matchers: Vec<Fragment>,
+pub(crate) struct SubRule {
+    pub(crate) matchers: Vec<Fragment>,
 }
 
 #[derive(Debug, Clone)]
-crate enum Fragment {
+pub(crate) enum Fragment {
     Var(Ident, Type),
     Repeat(SubRule, RepeatKind, Option<Punct>),
     Ident(Ident),
@@ -37,7 +37,7 @@ crate enum Fragment {
 }
 
 #[derive(Debug, Clone)]
-crate enum RepeatKind {
+pub(crate) enum RepeatKind {
     // `*`
     ZeroOrMore,
     // `+`
@@ -47,7 +47,7 @@ crate enum RepeatKind {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-crate enum Type {
+pub(crate) enum Type {
     Item,
     Block,
     Stmt,
@@ -64,26 +64,26 @@ crate enum Type {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-crate struct MetaVar {
-    crate name: Ident,
-    crate ty: MetaVarType,
+pub(crate) struct MetaVar {
+    pub(crate) name: Ident,
+    pub(crate) ty: MetaVarType,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-crate enum MetaVarType {
+pub(crate) enum MetaVarType {
     Vec(Box<MetaVarType>),
     Option(Box<MetaVarType>),
     T(Type),
 }
 
-crate struct RuleBuilder {
-    crate matchers: Vec<FragmentBuilder>,
-    crate variables: Vec<MetaVar>,
-    crate parent_name: Option<Ident>,
-    crate name: Ident,
+pub(crate) struct RuleBuilder {
+    pub(crate) matchers: Vec<FragmentBuilder>,
+    pub(crate) variables: Vec<MetaVar>,
+    pub(crate) parent_name: Option<Ident>,
+    pub(crate) name: Ident,
 }
 
-crate enum FragmentBuilder {
+pub(crate) enum FragmentBuilder {
     Var(Ident, Type),
     Repeat(RuleBuilder, RepeatKind, Option<Punct>),
     Ident(Ident),
@@ -93,7 +93,7 @@ crate enum FragmentBuilder {
 }
 
 impl SubRule {
-    crate fn to_builder(self, parent_name: Option<Ident>) -> RuleBuilder {
+    pub(crate) fn to_builder(self, parent_name: Option<Ident>) -> RuleBuilder {
         let mut variables = vec![];
         collect_vars(&self, &mut variables);
         let name = Ident::new(&next_builder_name(), Span::call_site());
@@ -120,7 +120,7 @@ fn next_builder_name() -> String {
 }
 
 impl Fragment {
-    crate fn to_builder(self, parent_name: Option<Ident>) -> FragmentBuilder {
+    pub(crate) fn to_builder(self, parent_name: Option<Ident>) -> FragmentBuilder {
         match self {
             Fragment::Var(i, t) => FragmentBuilder::Var(i, t),
             Fragment::Repeat(r, rep, sep) => FragmentBuilder::Repeat(r.to_builder(parent_name), rep, sep),
