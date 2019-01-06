@@ -8,16 +8,16 @@ use syn::{Ident, Token};
 crate fn expand_rules(rules: Rules) -> TokenStream2 {
     let clause = rules.clause;
     let rules = rules.rules.into_iter().map(|r| expand_rule(r));
-    quote! {
-        // This is needed because the user can add return statements which make
-        // later code unreachable.
-        #[allow(unreachable_code)]
-        'outer: {
-            let tts = &#clause;
-            #(#rules)*
+    quote!({
+        let tts = &#clause;
+        #(
+            if let Some(value) = #rules {
+                value
+            } else
+        )* {
             panic!("No rule matched input");
         }
-    }
+    })
 }
 
 fn expand_rule(rule: Rule) -> TokenStream2 {
@@ -33,38 +33,43 @@ fn expand_rule(rule: Rule) -> TokenStream2 {
     let builder_name = &rule.name;
     let matches = matches(&builder_name, &variables);
 
-    quote! {
-        {
-            #matches
+    quote!({
+        #matches
 
-            impl syn::parse::Parse for Matches {
-                fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
-                    let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
-                    // parse the whole initial ParseStream to avoid 'unexpected token' errors
-                    let _: Result<proc_macro2::TokenStream, _> = ps.parse();
+        impl syn::parse::Parse for Matches {
+            fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
+                let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
+                // parse the whole initial ParseStream to avoid 'unexpected token' errors
+                let _: Result<proc_macro2::TokenStream, _> = ps.parse();
 
-                    #rule
+                #rule
 
-                    let result = ms.finalise()?;
-                    // FIXME(#8) pick best match
-                    result.into_iter().filter_map(|p| if p.input.is_empty() {
-                        Some(p.matches.finalise())
-                    } else {
-                        None
-                    }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
-                }
-            }
-
-            match syn::parse2(tts.clone()) {
-                Ok(Matches { #(#vars,)* }) => {
-                    #body;
-                    break 'outer;
-                }
-                // It can be useful to debug here.
-                Err(e) => {}
+                let result = ms.finalise()?;
+                // FIXME(#8) pick best match
+                result.into_iter().filter_map(|p| if p.input.is_empty() {
+                    Some(p.matches.finalise())
+                } else {
+                    None
+                }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
             }
         }
-    }
+
+        match syn::parse2(tts.clone()) {
+            Ok(Matches { #(#vars,)* }) => {
+                let value = { #body };
+
+                // This is needed because the body may have ended in a return
+                // statement which makes the `Some` construction unreachable.
+                #[allow(unreachable_code)]
+                {
+                    Some(value)
+                }
+            }
+
+            // It can be useful to debug here.
+            Err(e) => None,
+        }
+    })
 }
 
 fn var_names(variables: &[MetaVar]) -> Vec<Ident> {

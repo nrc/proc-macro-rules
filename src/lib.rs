@@ -42,7 +42,6 @@
 
 
 #![feature(proc_macro_hygiene)]
-#![feature(label_break_value)]
 
 extern crate proc_macro2;
 extern crate proc_macro_rules_macros as macros;
