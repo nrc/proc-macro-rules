@@ -73,7 +73,7 @@ impl Parse for Fragment {
                         let p = match tok {
                             TokenTree2::Punct(p) => p,
                             _ => {
-                                return Err(input.error("Separator not punctutation"));
+                                return Err(input.error("Separator not punctuation"));
                             }
                         };
                         (Some(p), input.parse()?)

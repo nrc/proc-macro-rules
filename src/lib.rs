@@ -160,4 +160,59 @@ mod tests {
         apply("bar".parse().unwrap(), 1);
         apply("a b c".parse().unwrap(), 2);
     }
+
+    #[test]
+    fn test_opt() {
+        fn apply(tokens: proc_macro2::TokenStream) {
+            rules!(tokens => {
+                (foo $(bar),? baz) => {
+                    return;
+                }
+            });
+            panic!();
+        }
+
+        apply("foo baz".parse().unwrap());
+        apply("foo bar baz".parse().unwrap());
+        apply("foo bar, baz".parse().unwrap());
+    }
+
+    #[test]
+    fn test_plus() {
+        fn apply(tokens: proc_macro2::TokenStream) {
+            rules!(tokens => {
+                (foo $(bar),+ baz) => {
+                    return;
+                }
+            });
+            panic!();
+        }
+
+        apply("foo bar baz".parse().unwrap());
+        apply("foo bar, baz".parse().unwrap());
+        apply("foo bar, bar baz".parse().unwrap());
+        apply("foo bar, bar, baz".parse().unwrap());
+        apply("foo bar, bar, bar baz".parse().unwrap());
+        apply("foo bar, bar, bar, baz".parse().unwrap());
+    }
+
+    #[test]
+    fn test_star() {
+        fn apply(tokens: proc_macro2::TokenStream) {
+            rules!(tokens => {
+                (foo $(bar),* baz) => {
+                    return;
+                }
+            });
+            panic!();
+        }
+
+        apply("foo baz".parse().unwrap());
+        apply("foo bar baz".parse().unwrap());
+        apply("foo bar, baz".parse().unwrap());
+        apply("foo bar, bar baz".parse().unwrap());
+        apply("foo bar, bar, baz".parse().unwrap());
+        apply("foo bar, bar, bar baz".parse().unwrap());
+        apply("foo bar, bar, bar, baz".parse().unwrap());
+    }
 }

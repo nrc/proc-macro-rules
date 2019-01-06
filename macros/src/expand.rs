@@ -255,7 +255,7 @@ impl ToTokens for FragmentBuilder {
                     Ok(())
                 })?;
             }),
-            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrMore, _) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrMore, sep) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,
@@ -264,14 +264,30 @@ impl ToTokens for FragmentBuilder {
                     HoistRepeat::Repeat,
                 );
 
+                let sep = match sep {
+                    Some(sep) => quote! {
+                        ms.expect(|ps, _| {
+                            if ps.peek(syn::Token!(#sep)) {
+                                let _: proc_macro2::TokenTree = ps.parse().unwrap();
+                            } else {
+                                terminate = true;
+                            }
+                            Ok(())
+                        })?;
+                    },
+                    None => TokenStream2::new(),
+                };
+
                 tokens.append_all(quote! {
-                    while ms.fork(|ps, match_handler| {
+                    let mut terminate = false;
+                    while !terminate && ms.fork(|ps, match_handler| {
                         #match_builder
 
                         let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
+                        #sep
 
                         let mb = ms.finalise()?;
                         match_handler.hoist(&mb);
@@ -281,7 +297,7 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore, _) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore, sep) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,
@@ -290,15 +306,31 @@ impl ToTokens for FragmentBuilder {
                     HoistRepeat::Repeat,
                 );
 
+                let sep = match sep {
+                    Some(sep) => quote! {
+                        ms.expect(|ps, _| {
+                            if ps.peek(syn::Token!(#sep)) {
+                                let _: proc_macro2::TokenTree = ps.parse().unwrap();
+                            } else {
+                                terminate = true;
+                            }
+                            Ok(())
+                        })?;
+                    },
+                    None => TokenStream2::new(),
+                };
+
                 tokens.append_all(quote! {
                     let mut count = 0;
-                    while ms.fork(|ps, match_handler| {
+                    let mut terminate = false;
+                    while !terminate && ms.fork(|ps, match_handler| {
                         #match_builder
 
                         let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
+                        #sep
 
                         let mb = ms.finalise()?;
                         match_handler.hoist(&mb);
@@ -316,7 +348,7 @@ impl ToTokens for FragmentBuilder {
                     ms.reset_states();
                 });
             }
-            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne, _) => {
+            FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne, sep) => {
                 let sub_builder_name = &rule.name;
                 let match_builder = crate::expand::sub_matches(
                     sub_builder_name,
@@ -324,6 +356,17 @@ impl ToTokens for FragmentBuilder {
                     &rule.variables,
                     HoistRepeat::Option,
                 );
+                let sep = match sep {
+                    Some(sep) => quote! {
+                        ms.expect(|ps, _| {
+                            if ps.peek(syn::Token!(#sep)) {
+                                let _: proc_macro2::TokenTree = ps.parse().unwrap();
+                            }
+                            Ok(())
+                        })?;
+                    },
+                    None => TokenStream2::new(),
+                };
 
                 tokens.append_all(quote! {
                     ms.fork(|ps, match_handler| {
@@ -333,6 +376,7 @@ impl ToTokens for FragmentBuilder {
                             proc_macro_rules::MatchSet::new(ps);
 
                         #rule
+                        #sep
 
                         let mb = ms.finalise()?;
                         match_handler.hoist(&mb);

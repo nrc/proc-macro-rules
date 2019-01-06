@@ -54,9 +54,9 @@ impl<'a, M: Fork> MatchSet<'a, M> {
     }
 
     // return value = if any positions were forked
-    pub fn fork<F>(&mut self, f: F) -> bool
+    pub fn fork<F>(&mut self, mut f: F) -> bool
     where
-        for<'b> F: Fn(ParseBuffer<'a>, &mut MatchHandler<'b, 'a, M>) -> Result<(), Error>,
+        for<'b> F: FnMut(ParseBuffer<'a>, &mut MatchHandler<'b, 'a, M>) -> Result<(), Error>,
     {
         debug_assert!(self.garbage.is_empty());
 
@@ -91,9 +91,9 @@ impl<'a, M: Fork> MatchSet<'a, M> {
     }
 
     // returns err if the set is non-empty
-    pub fn expect<F>(&mut self, f: F) -> Result<(), Error>
+    pub fn expect<F>(&mut self, mut f: F) -> Result<(), Error>
     where
-        for<'b> F: Fn(ParseStream<'b>, &'b mut M) -> Result<(), Error>,
+        for<'b> F: FnMut(ParseStream<'b>, &'b mut M) -> Result<(), Error>,
     {
         debug_assert!(self.garbage.is_empty());
 
