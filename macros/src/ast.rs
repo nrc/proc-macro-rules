@@ -15,18 +15,18 @@ crate struct Rule {
     crate rhs: Rhs,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 crate enum Rhs {
     Expr(Expr),
     Block(Block),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 crate struct SubRule {
     crate matchers: Vec<Fragment>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 crate enum Fragment {
     Var(Ident, Type),
     Repeat(SubRule, RepeatKind, Option<Punct>),
@@ -36,7 +36,7 @@ crate enum Fragment {
     Group(SubRule, Delimiter),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 crate enum RepeatKind {
     // `*`
     ZeroOrMore,

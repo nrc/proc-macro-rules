@@ -5,71 +5,75 @@ use proc_macro2::{Delimiter, Span, TokenStream as TokenStream2};
 use quote::{quote, ToTokens, TokenStreamExt};
 use syn::{Ident, Token};
 
-crate fn expand_rules(rules: Rules) -> TokenStream2 {
-    let clause = rules.clause;
-    let rules = rules.rules.into_iter().map(|r| expand_rule(r));
-    quote!({
-        let tts = &#clause;
-        #(
-            if let Some(value) = #rules {
-                value
-            } else
-        )* {
-            panic!("No rule matched input");
-        }
-    })
+impl ToTokens for Rules {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        let clause = &self.clause;
+        let rules = &self.rules;
+        tokens.append_all(quote!({
+            let tts = &#clause;
+            #(
+                if let Some(value) = #rules {
+                    value
+                } else
+            )* {
+                panic!("No rule matched input");
+            }
+        }));
+    }
 }
 
-fn expand_rule(rule: Rule) -> TokenStream2 {
-    verify_rule(&rule.lhs);
+impl ToTokens for Rule {
+    fn to_tokens(&self, tokens: &mut TokenStream2) {
+        verify_rule(&self.lhs);
 
-    let body = rule.rhs;
+        let body = &self.rhs;
 
-    let rule = rule.lhs;
-    let mut variables = vec![];
-    collect_vars(&rule, &mut variables);
-    let rule = rule.to_builder(None);
-    let vars = var_names(&variables);
-    let builder_name = &rule.name;
-    let matches = matches(&builder_name, &variables);
+        let rule = &self.lhs;
+        let mut variables = vec![];
+        collect_vars(&rule, &mut variables);
+        let rule = rule.clone().to_builder(None);
+        let vars = var_names(&variables);
+        let builder_name = &rule.name;
+        let matches = matches(&builder_name, &variables);
 
-    quote!({
-        #matches
+        tokens.append_all(quote!({
+            #matches
 
-        impl syn::parse::Parse for Matches {
-            fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
-                let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
-                // parse the whole initial ParseStream to avoid 'unexpected token' errors
-                let _: Result<proc_macro2::TokenStream, _> = ps.parse();
+            impl syn::parse::Parse for Matches {
+                fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
+                    let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
+                    // parse the whole initial ParseStream to avoid 'unexpected token' errors
+                    let _: Result<proc_macro2::TokenStream, _> = ps.parse();
 
-                #rule
+                    #rule
 
-                let result = ms.finalise()?;
-                // FIXME(#8) pick best match
-                result.into_iter().filter_map(|p| if p.input.is_empty() {
-                    Some(p.matches.finalise())
-                } else {
-                    None
-                }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
-            }
-        }
-
-        match syn::parse2(tts.clone()) {
-            Ok(Matches { #(#vars,)* }) => {
-                let value = { #body };
-
-                // This is needed because the body may have ended in a return
-                // statement which makes the `Some` construction unreachable.
-                #[allow(unreachable_code)]
-                {
-                    Some(value)
+                    let result = ms.finalise()?;
+                    // FIXME(#8) pick best match
+                    result.into_iter().filter_map(|p| if p.input.is_empty() {
+                        Some(p.matches.finalise())
+                    } else {
+                        None
+                    }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
                 }
             }
 
-            // It can be useful to debug here.
-            Err(e) => None,
-        }
-    })
+            match syn::parse2(tts.clone()) {
+                Ok(Matches { #(#vars,)* }) => {
+                    let value = { #body };
+
+                    // This is needed because the body may have ended in a return
+                    // statement which makes the `Some` construction unreachable.
+                    #[allow(unreachable_code)]
+                    {
+                        Some(value)
+                    }
+                }
+
+                // It can be useful to debug here.
+                Err(e) => None,
+            }
+        }));
+    }
 }
 
 fn var_names(variables: &[MetaVar]) -> Vec<Ident> {
@@ -257,7 +261,7 @@ impl ToTokens for FragmentBuilder {
             }),
             FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrMore, sep) => {
                 let sub_builder_name = &rule.name;
-                let match_builder = crate::expand::sub_matches(
+                let match_builder = sub_matches(
                     sub_builder_name,
                     rule.parent_name.as_ref().unwrap(),
                     &rule.variables,
@@ -299,7 +303,7 @@ impl ToTokens for FragmentBuilder {
             }
             FragmentBuilder::Repeat(rule, RepeatKind::OneOrMore, sep) => {
                 let sub_builder_name = &rule.name;
-                let match_builder = crate::expand::sub_matches(
+                let match_builder = sub_matches(
                     sub_builder_name,
                     rule.parent_name.as_ref().unwrap(),
                     &rule.variables,
@@ -350,7 +354,7 @@ impl ToTokens for FragmentBuilder {
             }
             FragmentBuilder::Repeat(rule, RepeatKind::ZeroOrOne, sep) => {
                 let sub_builder_name = &rule.name;
-                let match_builder = crate::expand::sub_matches(
+                let match_builder = sub_matches(
                     sub_builder_name,
                     rule.parent_name.as_ref().unwrap(),
                     &rule.variables,
