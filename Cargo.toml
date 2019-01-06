@@ -22,5 +22,9 @@ members = [
     "macros",
 ]
 
+[[example]]
+name = "macro_rules"
+crate-type = ["proc-macro"]
+
 [patch.crates-io]
 proc-macro-rules-macros = { path = "macros" }

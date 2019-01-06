@@ -10,7 +10,7 @@ impl ToTokens for Rules {
         let clause = &self.clause;
         let rules = &self.rules;
         tokens.append_all(quote!({
-            let tts = &#clause;
+            let tts: &proc_macro2::TokenStream = &#clause;
             #(
                 if let Some(value) = #rules {
                     value
