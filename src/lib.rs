@@ -5,8 +5,6 @@
 //! Example:
 //! 
 //! ```rust
-//! #![feature(label_break_value, proc_macro_hygiene)]
-//!
 //! use proc_macro_rules::rules;
 //! use proc_macro2::TokenStream;
 //!
@@ -72,13 +70,12 @@
 extern crate proc_macro2;
 extern crate proc_macro_hack;
 extern crate proc_macro_rules_macros;
-extern crate syn;
+#[doc(hidden)]
+pub extern crate syn;
 
 pub use crate::match_set::{Fork, MatchSet};
-#[proc_macro_hack]
+#[proc_macro_hack::proc_macro_hack]
 pub use proc_macro_rules_macros::rules;
-
-use proc_macro_hack::proc_macro_hack;
 
 mod match_set;
 

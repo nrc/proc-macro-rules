@@ -39,8 +39,8 @@ impl ToTokens for Rule {
         tokens.append_all(quote!({
             #matches
 
-            impl syn::parse::Parse for Matches {
-                fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<Matches> {
+            impl proc_macro_rules::syn::parse::Parse for Matches {
+                fn parse(ps: proc_macro_rules::syn::parse::ParseStream) -> proc_macro_rules::syn::parse::Result<Matches> {
                     let mut ms: proc_macro_rules::MatchSet<#builder_name> = proc_macro_rules::MatchSet::new(ps.fork());
                     // parse the whole initial ParseStream to avoid 'unexpected token' errors
                     let _: Result<proc_macro2::TokenStream, _> = ps.parse();
@@ -53,11 +53,11 @@ impl ToTokens for Rule {
                         Some(p.matches.finalise())
                     } else {
                         None
-                    }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
+                    }).next().ok_or_else(|| proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "pattern could not be parsed"))
                 }
             }
 
-            match syn::parse2(tts.clone()) {
+            match proc_macro_rules::syn::parse2(tts.clone()) {
                 Ok(Matches { #(#vars,)* }) => {
                     let value = { #body };
 
@@ -271,7 +271,7 @@ impl ToTokens for FragmentBuilder {
                 let sep = match sep {
                     Some(sep) => quote! {
                         ms.expect(|ps, _| {
-                            if ps.peek(syn::Token!(#sep)) {
+                            if ps.peek(proc_macro_rules::syn::Token!(#sep)) {
                                 let _: proc_macro2::TokenTree = ps.parse().unwrap();
                             } else {
                                 terminate = true;
@@ -313,7 +313,7 @@ impl ToTokens for FragmentBuilder {
                 let sep = match sep {
                     Some(sep) => quote! {
                         ms.expect(|ps, _| {
-                            if ps.peek(syn::Token!(#sep)) {
+                            if ps.peek(proc_macro_rules::syn::Token!(#sep)) {
                                 let _: proc_macro2::TokenTree = ps.parse().unwrap();
                             } else {
                                 terminate = true;
@@ -344,7 +344,7 @@ impl ToTokens for FragmentBuilder {
                         count += 1;
                     }
                     if count == 0 {
-                        return Err(syn::Error::new(
+                        return Err(proc_macro_rules::syn::Error::new(
                             proc_macro2::Span::call_site(),
                             "At least one iteration required",
                         ));
@@ -363,7 +363,7 @@ impl ToTokens for FragmentBuilder {
                 let sep = match sep {
                     Some(sep) => quote! {
                         ms.expect(|ps, _| {
-                            if ps.peek(syn::Token!(#sep)) {
+                            if ps.peek(proc_macro_rules::syn::Token!(#sep)) {
                                 let _: proc_macro2::TokenTree = ps.parse().unwrap();
                             }
                             Ok(())
@@ -398,7 +398,7 @@ impl ToTokens for FragmentBuilder {
                         if i.to_string() == #i_str {
                             Ok(())
                         } else {
-                            Err(syn::Error::new(proc_macro2::Span::call_site(), "bad ident"))
+                            Err(proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "bad ident"))
                         }
                     })?;
                 });
@@ -411,7 +411,7 @@ impl ToTokens for FragmentBuilder {
                         if p.to_string() == #p_str {
                             Ok(())
                         } else {
-                            Err(syn::Error::new(proc_macro2::Span::call_site(), "bad punct"))
+                            Err(proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "bad punct"))
                         }
                     })?;
                 });
@@ -424,7 +424,7 @@ impl ToTokens for FragmentBuilder {
                         if l.to_string() == #l_str {
                             Ok(())
                         } else {
-                            Err(syn::Error::new(proc_macro2::Span::call_site(), "bad literal"))
+                            Err(proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "bad literal"))
                         }
                     })?;
                 });
@@ -452,7 +452,7 @@ impl ToTokens for FragmentBuilder {
                             proc_macro2::TokenTree::Group(g) => {
                                 if g.delimiter() != #d_toks {
                                     return Err(
-                                        syn::Error::new(
+                                        proc_macro_rules::syn::Error::new(
                                             proc_macro2::Span::call_site(),
                                             "bad delimiter",
                                         ));
@@ -462,8 +462,8 @@ impl ToTokens for FragmentBuilder {
 
                                     struct MatchParser(#sub_builder_name);
 
-                                    impl syn::parse::Parse for MatchParser {
-                                        fn parse(ps: syn::parse::ParseStream) -> syn::parse::Result<MatchParser> {
+                                    impl proc_macro_rules::syn::parse::Parse for MatchParser {
+                                        fn parse(ps: proc_macro_rules::syn::parse::ParseStream) -> proc_macro_rules::syn::parse::Result<MatchParser> {
                                             let mut ms: proc_macro_rules::MatchSet<#sub_builder_name> =
                                                 proc_macro_rules::MatchSet::new(ps.fork());
                                             // parse the whole initial ParseStream to avoid 'unexpected token' errors
@@ -476,16 +476,16 @@ impl ToTokens for FragmentBuilder {
                                                 Some(MatchParser(p.matches))
                                             } else {
                                                 None
-                                            }).next().ok_or_else(|| syn::Error::new(proc_macro2::Span::call_site(), "group could not be parsed"))
+                                            }).next().ok_or_else(|| proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "group could not be parsed"))
                                         }
                                     }
 
-                                    let mp: MatchParser = syn::parse2(g.stream())?;
+                                    let mp: MatchParser = proc_macro_rules::syn::parse2(g.stream())?;
                                     proc_macro_rules::Fork::hoist(&mp.0, matches);
                                 }
                                 Ok(())
                             }
-                            _ => Err(syn::Error::new(proc_macro2::Span::call_site(), "expected group")),
+                            _ => Err(proc_macro_rules::syn::Error::new(proc_macro2::Span::call_site(), "expected group")),
                         }
                     })?;
                 });
