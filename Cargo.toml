@@ -1,6 +1,6 @@
 [package]
 name = "proc-macro-rules"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Nick Cameron <nrc@ncameron.org>"]
 edition = "2018"
 repository = "https://github.com/nrc/proc-macro-rules"
@@ -9,7 +9,7 @@ readme = "README.md"
 license = "Apache-2.0/MIT"
 
 [dependencies]
-proc-macro-rules-macros = "0.1.1"
+proc-macro-rules-macros = "0.2.0"
 proc-macro2 = "0.4.21"
 proc-macro-hack = "0.5"
 syn = { version = "0.15.0", features = ["full", "extra-traits"] }
