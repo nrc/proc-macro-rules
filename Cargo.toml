@@ -13,6 +13,9 @@ proc-macro-rules-macros = "0.1.1"
 proc-macro2 = "0.4.21"
 syn = { version = "0.15.0", features = ["full", "extra-traits"] }
 
+[dev-dependencies]
+quote = "0.6"
+
 [workspace]
 members = [
     "macros",

@@ -4,22 +4,50 @@
 //! 
 //! Example:
 //! 
-//! ```rust,ignore
-//! use proc_macro_rules::rules;
+//! ```rust
+//! #![feature(label_break_value, proc_macro_hygiene)]
 //!
-//! rules!(tokens => {
-//!     ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
-//!         for f in found {
-//!             do_something(finish, f, inner, rest[0]);
+//! use proc_macro_rules::rules;
+//! use proc_macro2::TokenStream;
+//!
+//! fn main() {
+//!     # use quote::quote;
+//!     # test_rules(quote! { A (B C) #[inner...] ... });
+//!     # test_rules(quote! { foo 1 + 1 });
+//!     # test_rules(quote! { foo });
+//! # }
+//! #
+//! # fn test_rules(tokens: TokenStream) {
+//!     # const IGNORE: &str = stringify! {
+//!     let tokens: TokenStream = /* ... */;
+//!     # };
+//!
+//!     rules!(tokens => {
+//!         ($finish:ident ($($found:ident)*) # [ $($inner:tt)* ] $($rest:tt)*) => {
+//!             for f in found {
+//!                 do_something(&finish, f, &inner, &rest[0]);
+//!             }
 //!         }
-//!     }
-//!     (foo $($bar:expr)?) => {
-//!         match bar {
-//!             Some(e) => foo_with_expr(e),
-//!             None => foo_no_expr(),
+//!         (foo $($bar:expr)?) => {
+//!             match bar {
+//!                 Some(e) => foo_with_expr(e),
+//!                 None => foo_no_expr(),
+//!             }
 //!         }
-//!     }
-//! });
+//!     });
+//! }
+//! #
+//! # use syn::{Expr, Ident};
+//! # use proc_macro2::TokenTree;
+//! #
+//! # fn do_something(
+//! #     finish: &Ident,
+//! #     f: Ident,
+//! #     inner: &[TokenTree],
+//! #     rest: &TokenTree,
+//! # ) {}
+//! # fn foo_with_expr(e: Expr) {}
+//! # fn foo_no_expr() {}
 //! ```
 //! 
 //! Import the `rules` macro with `use proc_macro_rules::rules`, then use with 
