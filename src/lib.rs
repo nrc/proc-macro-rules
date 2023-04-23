@@ -66,8 +66,6 @@
 //! For example, in the first branch in the above example `ident` has type
 //! `syn::Ident` and `inner` has type `Vec<proc_macro2::TokenTree>`.
 
-extern crate proc_macro2;
-extern crate proc_macro_rules_macros;
 #[doc(hidden)]
 pub extern crate syn;
 

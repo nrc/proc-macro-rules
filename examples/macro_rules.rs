@@ -15,7 +15,7 @@ use proc_macro_rules::rules;
 use quote::quote;
 
 // Declarative version using macro_rules.
-macro_rules! vec_rules {
+macro_rules! vec {
     () => {
         Vec::new()
     };
@@ -32,7 +32,7 @@ macro_rules! vec_rules {
 
 // Procedural version.
 #[proc_macro]
-pub fn vec_proc(input: TokenStream) -> TokenStream {
+pub fn vec(input: TokenStream) -> TokenStream {
     rules!(input.into() => {
         () => { quote! {
             Vec::new()
