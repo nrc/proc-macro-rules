@@ -72,8 +72,6 @@ extern crate proc_macro_rules_macros;
 pub extern crate syn;
 
 pub use crate::match_set::{Fork, MatchSet};
-use proc_macro_hack::proc_macro_hack;
-#[proc_macro_hack]
 pub use proc_macro_rules_macros::rules;
 
 mod match_set;
