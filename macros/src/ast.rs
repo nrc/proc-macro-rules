@@ -1,6 +1,8 @@
 use crate::collect_vars;
 
-use proc_macro2::{Delimiter, Literal, Punct, Span, Ident};
+use once_cell::sync::OnceCell;
+use proc_macro2::{Delimiter, Ident, Literal, Punct, Span};
+use std::sync::Mutex;
 use syn::{Block, Expr};
 
 #[derive(Debug)]
@@ -110,13 +112,11 @@ impl SubRule {
     }
 }
 
-// FIXME(#10) WARNING: VERY THREAD-UNSAFE
 fn next_builder_name() -> String {
-    static mut NEXT_ID: u32 = 0;
-    unsafe {
-        NEXT_ID += 1;
-        format!("MatchesBuilder{}", NEXT_ID)
-    }
+    static NEXT_ID: OnceCell<Mutex<u32>> = OnceCell::with_value(Mutex::new(0));
+    let mut next_id = NEXT_ID.get().unwrap().lock().unwrap();
+    *next_id += 1;
+    format!("MatchesBuilder{}", next_id)
 }
 
 impl Fragment {
