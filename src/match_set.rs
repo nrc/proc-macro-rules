@@ -34,16 +34,14 @@ pub struct MatchHandler<'a, 'b: 'a, M: Fork> {
 
 impl<'a, M: Fork> MatchSet<'a, M> {
     pub fn new(initial: ParseBuffer<'a>) -> MatchSet<'a, M> {
-        let result = MatchSet {
+        MatchSet {
             positions: vec![Position {
                 input: initial,
                 matches: M::new(),
                 state: FragmentState::Ready,
             }],
             garbage: HashSet::new(),
-        };
-
-        result
+        }
     }
 
     pub fn finalise(self) -> syn::parse::Result<Vec<Position<'a, M>>> {
@@ -71,9 +69,8 @@ impl<'a, M: Fork> MatchSet<'a, M> {
                 outer_position: p,
                 forked: vec![],
             };
-            match f(forked_input, &mut match_handler) {
-                Ok(_) => forked.append(&mut match_handler.forked),
-                Err(_) => {}
+            if f(forked_input, &mut match_handler).is_ok() {
+                forked.append(&mut match_handler.forked);
             }
         }
 

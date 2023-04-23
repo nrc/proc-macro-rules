@@ -24,7 +24,7 @@ rules!(tokens => {
 
 ## Using proc-macro-rules
 
-Add `proc-macro-rules = "0.2.1"` to your Cargo.toml.
+Add `proc-macro-rules = "0.3.0"` (or `proc-macro-rules = "0.2.1"` for versions between 1.31 and 1.56) to your Cargo.toml.
 
 Import the `rules` macro with `use proc_macro_rules::rules`, then use with `rules!(tokens => { branches });` where `tokens` is an expression which evaluates to a `TokenStream` (such as the argument in the definition of a procedural macro).
 

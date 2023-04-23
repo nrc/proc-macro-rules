@@ -10,12 +10,12 @@
 
 extern crate proc_macro;
 
-use quote::quote;
 use proc_macro::TokenStream;
 use proc_macro_rules::rules;
+use quote::quote;
 
 // Declarative version using macro_rules.
-macro_rules! vec {
+macro_rules! vec_rules {
     () => {
         Vec::new()
     };
@@ -32,7 +32,7 @@ macro_rules! vec {
 
 // Procedural version.
 #[proc_macro]
-pub fn vec(input: TokenStream) -> TokenStream {
+pub fn vec_proc(input: TokenStream) -> TokenStream {
     rules!(input.into() => {
         () => { quote! {
             Vec::new()
@@ -44,5 +44,6 @@ pub fn vec(input: TokenStream) -> TokenStream {
             )*
             temp_vec
         }}
-    }).into()
+    })
+    .into()
 }

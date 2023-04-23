@@ -66,15 +66,12 @@
 //! For example, in the first branch in the above example `ident` has type
 //! `syn::Ident` and `inner` has type `Vec<proc_macro2::TokenTree>`.
 
-
 extern crate proc_macro2;
-extern crate proc_macro_hack;
 extern crate proc_macro_rules_macros;
 #[doc(hidden)]
 pub extern crate syn;
 
 pub use crate::match_set::{Fork, MatchSet};
-#[proc_macro_hack::proc_macro_hack]
 pub use proc_macro_rules_macros::rules;
 
 mod match_set;
@@ -83,6 +80,7 @@ mod match_set;
 #[cfg(test)]
 mod tests {
     use crate as proc_macro_rules;
+    use super::*;
 
     #[test]
     fn test_smoke() {
