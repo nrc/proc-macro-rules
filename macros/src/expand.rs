@@ -30,11 +30,11 @@ impl ToTokens for Rule {
 
         let rule = &self.lhs;
         let mut variables = vec![];
-        collect_vars(&rule, &mut variables);
-        let rule = rule.clone().to_builder(None);
+        collect_vars(rule, &mut variables);
+        let rule = rule.clone().into_builder(None);
         let vars = var_names(&variables);
         let builder_name = &rule.name;
-        let matches = matches(&builder_name, &variables);
+        let matches = matches(builder_name, &variables);
 
         tokens.append_all(quote!({
             #matches
@@ -395,6 +395,7 @@ impl ToTokens for FragmentBuilder {
                 tokens.append_all(quote! {
                     ms.expect(|ps, _| {
                         let i: proc_macro2::Ident = ps.parse()?;
+                        #[allow(clippy::cmp_owned)]
                         if i.to_string() == #i_str {
                             Ok(())
                         } else {
@@ -408,6 +409,7 @@ impl ToTokens for FragmentBuilder {
                 tokens.append_all(quote! {
                     ms.expect(|ps, _| {
                         let p: proc_macro2::Punct = ps.parse()?;
+                        #[allow(clippy::cmp_owned)]
                         if p.to_string() == #p_str {
                             Ok(())
                         } else {
@@ -421,6 +423,7 @@ impl ToTokens for FragmentBuilder {
                 tokens.append_all(quote! {
                     ms.expect(|ps, _| {
                         let l: proc_macro2::Literal = ps.parse()?;
+                        #[allow(clippy::cmp_owned)]
                         if l.to_string() == #l_str {
                             Ok(())
                         } else {

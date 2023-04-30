@@ -10,9 +10,9 @@
 
 extern crate proc_macro;
 
-use quote::quote;
 use proc_macro::TokenStream;
 use proc_macro_rules::rules;
+use quote::quote;
 
 // Declarative version using macro_rules.
 macro_rules! vec {
@@ -44,5 +44,6 @@ pub fn vec(input: TokenStream) -> TokenStream {
             )*
             temp_vec
         }}
-    }).into()
+    })
+    .into()
 }

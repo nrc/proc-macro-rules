@@ -1,7 +1,9 @@
 use crate::collect_vars;
 
-use proc_macro2::{Delimiter, Literal, Punct, Span};
-use syn::{Block, Expr, Ident};
+use once_cell::sync::OnceCell;
+use proc_macro2::{Delimiter, Ident, Literal, Punct, Span};
+use std::sync::Mutex;
+use syn::{Block, Expr};
 
 #[derive(Debug)]
 pub(crate) struct Rules {
@@ -93,7 +95,7 @@ pub(crate) enum FragmentBuilder {
 }
 
 impl SubRule {
-    pub(crate) fn to_builder(self, parent_name: Option<Ident>) -> RuleBuilder {
+    pub(crate) fn into_builder(self, parent_name: Option<Ident>) -> RuleBuilder {
         let mut variables = vec![];
         collect_vars(&self, &mut variables);
         let name = Ident::new(&next_builder_name(), Span::call_site());
@@ -101,7 +103,7 @@ impl SubRule {
             matchers: self
                 .matchers
                 .into_iter()
-                .map(|m| m.to_builder(Some(name.clone())))
+                .map(|m| m.into_builder(Some(name.clone())))
                 .collect(),
             variables,
             name,
@@ -110,24 +112,24 @@ impl SubRule {
     }
 }
 
-// FIXME(#10) WARNING: VERY THREAD-UNSAFE
 fn next_builder_name() -> String {
-    static mut NEXT_ID: u32 = 0;
-    unsafe {
-        NEXT_ID += 1;
-        format!("MatchesBuilder{}", NEXT_ID)
-    }
+    static NEXT_ID: OnceCell<Mutex<u32>> = OnceCell::with_value(Mutex::new(0));
+    let mut next_id = NEXT_ID.get().unwrap().lock().unwrap();
+    *next_id += 1;
+    format!("MatchesBuilder{}", next_id)
 }
 
 impl Fragment {
-    pub(crate) fn to_builder(self, parent_name: Option<Ident>) -> FragmentBuilder {
+    pub(crate) fn into_builder(self, parent_name: Option<Ident>) -> FragmentBuilder {
         match self {
             Fragment::Var(i, t) => FragmentBuilder::Var(i, t),
-            Fragment::Repeat(r, rep, sep) => FragmentBuilder::Repeat(r.to_builder(parent_name), rep, sep),
+            Fragment::Repeat(r, rep, sep) => {
+                FragmentBuilder::Repeat(r.into_builder(parent_name), rep, sep)
+            }
             Fragment::Ident(i) => FragmentBuilder::Ident(i),
             Fragment::Punct(p) => FragmentBuilder::Punct(p),
             Fragment::Literal(l) => FragmentBuilder::Literal(l),
-            Fragment::Group(r, d) => FragmentBuilder::Group(r.to_builder(parent_name), d),
+            Fragment::Group(r, d) => FragmentBuilder::Group(r.into_builder(parent_name), d),
         }
     }
 }

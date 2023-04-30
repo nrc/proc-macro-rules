@@ -6,7 +6,6 @@ extern crate quote;
 extern crate syn;
 
 use proc_macro::TokenStream;
-use proc_macro_hack::proc_macro_hack;
 use quote::ToTokens;
 use syn::parse_macro_input;
 
@@ -14,12 +13,11 @@ mod ast;
 mod expand;
 mod parse;
 
-#[proc_macro_hack]
+#[proc_macro]
 pub fn rules(input: TokenStream) -> TokenStream {
-    let rules = parse_macro_input!(input as ast::Rules);
-    let result = rules.into_token_stream().into();
-    // println!("{}", result);
-    result
+    parse_macro_input!(input as ast::Rules)
+        .into_token_stream()
+        .into()
 }
 
 fn verify_rule(_rule: &ast::SubRule) {
@@ -62,8 +60,8 @@ fn collect_vars(rule: &ast::SubRule, vars: &mut Vec<ast::MetaVar>) {
 mod test {
     use super::*;
     use crate::ast::*;
-    use syn::Ident;
     use proc_macro2::Span;
+    use syn::Ident;
 
     #[test]
     fn test_collect_vars() {
@@ -74,19 +72,23 @@ mod test {
         }
 
         // ``
-        let ast = ast::SubRule {
-            matchers: vec![],
-        };
+        let ast = ast::SubRule { matchers: vec![] };
         run_test(ast, vec![]);
 
         // `$foo:vis`
         let ast = ast::SubRule {
-            matchers: vec![Fragment::Var(Ident::new("foo", Span::call_site()), Type::Vis)],
+            matchers: vec![Fragment::Var(
+                Ident::new("foo", Span::call_site()),
+                Type::Vis,
+            )],
         };
-        run_test(ast, vec![MetaVar {
-            name: Ident::new("foo", Span::call_site()),
-            ty: MetaVarType::T(Type::Vis),
-        }]);
+        run_test(
+            ast,
+            vec![MetaVar {
+                name: Ident::new("foo", Span::call_site()),
+                ty: MetaVarType::T(Type::Vis),
+            }],
+        );
 
         // `foo`
         let ast = ast::SubRule {
@@ -99,20 +101,30 @@ mod test {
             matchers: vec![
                 Fragment::Ident(Ident::new("foo", Span::call_site())),
                 Fragment::Var(Ident::new("bar", Span::call_site()), Type::Tt),
-                Fragment::Repeat(SubRule {
-                    matchers: vec![Fragment::Var(Ident::new("foo", Span::call_site()), Type::Expr)],
-                }, RepeatKind::OneOrMore),
+                Fragment::Repeat(
+                    SubRule {
+                        matchers: vec![Fragment::Var(
+                            Ident::new("foo", Span::call_site()),
+                            Type::Expr,
+                        )],
+                    },
+                    RepeatKind::OneOrMore,
+                    None,
+                ),
             ],
         };
-        run_test(ast, vec![
-            MetaVar {
-                name: Ident::new("bar", Span::call_site()),
-                ty: MetaVarType::T(Type::Tt),
-            },
-            MetaVar {
-                name: Ident::new("foo", Span::call_site()),
-                ty: MetaVarType::Vec(Box::new(MetaVarType::T(Type::Expr))),
-            },
-        ]);
+        run_test(
+            ast,
+            vec![
+                MetaVar {
+                    name: Ident::new("bar", Span::call_site()),
+                    ty: MetaVarType::T(Type::Tt),
+                },
+                MetaVar {
+                    name: Ident::new("foo", Span::call_site()),
+                    ty: MetaVarType::Vec(Box::new(MetaVarType::T(Type::Expr))),
+                },
+            ],
+        );
     }
 }

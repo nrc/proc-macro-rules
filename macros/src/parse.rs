@@ -4,14 +4,14 @@ use proc_macro2::TokenTree as TokenTree2;
 use syn::parse::{Parse, ParseStream, Result as ParseResult};
 use syn::{
     braced, parenthesized, parse2,
-    token::{Brace, Comma, Dollar, FatArrow, Paren},
+    token::{Brace, Paren},
     Ident, Token,
 };
 
 impl Parse for Rules {
     fn parse(input: ParseStream) -> ParseResult<Rules> {
         let clause = input.parse()?;
-        input.parse::<FatArrow>()?;
+        input.parse::<Token![=>]>()?;
         let content;
         braced!(content in input);
         let mut rules = vec![];
@@ -29,7 +29,7 @@ impl Parse for Rule {
         parenthesized!(content in input);
         let lhs = content.parse()?;
 
-        input.parse::<FatArrow>()?;
+        input.parse::<Token![=>]>()?;
         let rhs = input.parse()?;
         Ok(Rule { lhs, rhs })
     }
@@ -41,7 +41,7 @@ impl Parse for Rhs {
             Ok(Rhs::Block(input.parse()?))
         } else {
             let e = input.parse()?;
-            input.parse::<Comma>()?;
+            input.parse::<Token![,]>()?;
             Ok(Rhs::Expr(e))
         }
     }
@@ -59,8 +59,8 @@ impl Parse for SubRule {
 
 impl Parse for Fragment {
     fn parse(input: ParseStream) -> ParseResult<Fragment> {
-        if input.peek(Dollar) {
-            let _: Dollar = input.parse()?;
+        if input.peek(Token![$]) {
+            let _: Token![$] = input.parse()?;
             if input.peek(Paren) {
                 let content;
                 parenthesized!(content in input);
